@@ -20,40 +20,47 @@ app.post("/book", (req, res) => {
     const { title, Author, PublishDate } = req.body;
 
     // Check required fields
-    if (!title || !Author) {
+    if (!title || !Author || !PublishDate) {
       return res.status(400).send("Fields are required");
     }
-
-    // Check if the book already exists
-    const existingBook = books.find(
-      (book) => book.Author === Author && book.title === title
+    //check if book exists
+    const bookExist = books.some(
+      (book) => book.title === title && book.Author === Author
     );
-
-    console.log(existingBook);
-
-    if (existingBook) {
-      return res.status(409).send("Book is already in store");
-    }
-
-    // Continue with adding the book logic here
-    books.push(title, Author, PublishDate);
+    if (bookExist) res.status(409).send("Book already exists");
+    const newBook = { title, Author, PublishDate };
+    books.push(newBook);
     res.status(201).json(books);
   } catch (error) {
     console.error("Internal server error");
   }
 });
 
-// app.delete("/book/:id", (req, res) => {
-//   const bookId = parseInt(req.params.id, 10);
-//   const bookIndex = books.findIndex((book) => book.id === bookId);
+app.delete("/book/:id", (req, res) => {
+  try {
+    const bookId = req.params;
+    const bookIndex = books.findIndex((book) => book.id === bookId);
+    if (bookIndex === -1)
+      res.status(404).send("Ooops book is not in collection");
+    books.splice(bookIndex, 1);
+    res.send(books);
+  } catch (error) {
+    res.status(500).send("Internal server error");
+  }
+});
 
-//   if (bookIndex === -1) {
-//     return res.status(404).json({ message: "Book not found" });
-//   }
-
-//   books.splice(bookIndex, 1);
-//   res.status(204).send();
-// });
+app.put("/book/:id", (req, res) => {
+  try {
+    const bookId = req.params.id;
+    const updatedBook = req.body;
+    const bookIndex = books.findIndex((book) => book.id === bookId);
+    if (bookIndex === -1) return res.status(404).send("Book not found");
+    books[bookIndex] = updatedBook;
+    res.send(books);
+  } catch (error) {
+    res.status(500).send("Internal server error");
+  }
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {

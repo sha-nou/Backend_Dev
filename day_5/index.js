@@ -38,7 +38,7 @@ app.post("/book", (req, res) => {
 
 app.delete("/book/:id", (req, res) => {
   try {
-    const bookId = req.params;
+    const bookId = parseInt(req.params.id);
     const bookIndex = books.findIndex((book) => book.id === bookId);
     if (bookIndex === -1)
       res.status(404).send("Ooops book is not in collection");
@@ -51,7 +51,7 @@ app.delete("/book/:id", (req, res) => {
 
 app.put("/book/:id", (req, res) => {
   try {
-    const bookId = req.params.id;
+    const bookId = parseInt(req.params.id);
     const updatedBook = req.body;
     const bookIndex = books.findIndex((book) => book.id === bookId);
     if (bookIndex === -1) return res.status(404).send("Book not found");

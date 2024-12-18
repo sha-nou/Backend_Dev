@@ -9,5 +9,6 @@ const userSchema = new mongoose.Schema({
     enum: ["Admin", "User"],
     default: "User",
   },
+  tasks:[{type:mongoose.Schema.Types.ObjectId,ref:'Task',default:[]}]
 });
 module.exports = mongoose.model("User", userSchema);

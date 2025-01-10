@@ -1,4 +1,3 @@
-
 import fs from "fs";
 import Path from "path";
 import util from "util";
@@ -8,47 +7,50 @@ const mkdir = util.promisify(fs.mkdir);
 const stat = util.promisify(fs.stat);
 
 const extensions = [];
-function getFileExtensions(filePath) {
-    const extType = Path.extname(filePath);
-    extensions.push(extType);
-  return extensions;
-}
-console.log(getFileExtensions( "index.docx"));
+async function getFileExtensions(dir) {
 
-const checkFileType = (dir) => {
-  try {
-    readdir(dir, (err, files) => {
-      if (err) {
-        console.error("Error reading directory:", err);
-        return;
+  const files = await readdir(dir);
+
+  const fileTypes = {};
+
+  for (const file of files) {
+    const filePath = Path.join(dir, file);
+    const stats = await stat(filePath);
+
+    if (stats.isFile()) {
+      const extType = Path.extname(file).toLowerCase();
+      if (!fileTypes[extType]) {
+        fileTypes[extType] = [];
       }
-      files.forEach((file) => 
-        {
-        const filePath = Path.join(dir, file);
-        stat(filePath, (err, stats) => {
-          if (err) {
-            console.error("Error getting file stats:", err);
-            return;
-          }
-          if (stats.isDirectory()) {
-            checkFileType(filePath);
-          } else {
-            getFileExtensions(filePath);
-          }
-        });
-        console.log(file)
-      }); 
-    });
-  } catch(error) {
-    console.error(error);
+      fileTypes[extType].push(filePath);
+    }
   }
+
+  return fileTypes;
+}
+
+const checkFileType = async (dir) => {
+  const fileTypes = await getFileExtensions(dir);
+  createFolderWithExt(fileTypes, dir);
 };
-checkFileType('/home/shasha/Downloads')
-const createFolderWithExt = async () => {
-  const newDir = extensions.map((extension) => {
-    const dirName = extension ? extension.slice(1) : "others";
-    mkdir(Path.join(dirName));
-  });
-  await Promise.all(newDir);
+
+checkFileType("/home/shasha/Downloads");
+
+const createFolderWithExt = async (fileTypes, dir) => {
+  for (const [extension, filePaths] of Object.entries(fileTypes)) {
+
+    const newFolder = extension.split(".")[1];
+    mkdir(Path.join(dir,newFolder))
+
+
+    for (const file of filePaths) {
+      const fileName = Path.basename(file);
+      const newPath = Path.resolve(dir, `${newFolder}/${fileName}`);
+      console.log(newPath);
+
+      fs.rename(file, newPath, (err) => {});
+    }
+  }
+
 };
-console.log(createFolderWithExt());
+

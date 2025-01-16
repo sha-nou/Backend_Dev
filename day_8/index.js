@@ -1,15 +1,20 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
-const app = express();
 const bcrypt = require("bcrypt");
 const dbConnect = require("./db");
 const router = require("./middleware/auth");
 const User = require("./Model/user");
 const Task = require("./Model/Task");
 const jwt = require('jsonwebtoken')
+const redis = require("redis")
+const app = express();
 // const router = require("./routes/taskRoute")
 
+
+
+const redisPort =6379
+const redisHost ='127.0.0.1'
 app.use(bodyParser.json());
 
 dotenv.config();
@@ -17,6 +22,22 @@ dotenv.config();
 dbConnect();
 
 app.use("/user", router);
+const redisClient = redis.createClient({
+  port:redisPort,
+  host:redisHost
+})
+
+let checkCache =(req,res,next)=>{
+  redisClient.get("users",(err,data)=>{
+    if(err) return next(err)
+      if(data !== null){
+        res.send(JSON.parse(data))
+      }
+      else{
+        next()
+      }
+  })
+}
 
 app.get("/", (req, res) => {
   res.send("hello world");
@@ -46,6 +67,19 @@ app.post("/register", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+app.get("/users",checkCache,(req,res)=>{
+ try {
+   const users = User.find()
+   if(!users){
+    res.status(404).json({message:'Ooops database empty'})
+   }
+   return res.status(201).json(users)
+ } catch (error) {
+  console.error(error)
+  res.status(500).json({message:'internal sever error'})
+ }
+})
 
 // Create a new task
 app.post("/task", async (req, res) => {

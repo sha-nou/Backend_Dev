@@ -43,6 +43,27 @@
       "when": 1737126808371,
       "tag": "0005_red_iron_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1737131577069,
+      "tag": "0006_cheerful_whiplash",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1737462657568,
+      "tag": "0007_safe_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1737462962130,
+      "tag": "0008_dark_leader",
+      "breakpoints": true
     }
   ]
 }
